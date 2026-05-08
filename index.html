@@ -379,8 +379,8 @@
       </div>
 
       <div style="max-width:360px;margin:18px auto 0;display:grid;gap:8px;">
-        <input id="codigoAcceso" type="password" placeholder="Ingresar código de acceso" autocomplete="off" />
-        <button type="button" onclick="validarCodigoAcceso()">Ingresar a la herramienta</button>
+        <input id="codigoAcceso" type="text" placeholder="Ingresar código de acceso" autocomplete="off" onkeydown="if(event.key === 'Enter') validarCodigoAcceso()" />
+        <button type="button" onclick="const c=document.getElementById('codigoAcceso').value.trim().toLowerCase(); if(c==='timacagro'){ localStorage.setItem('accesoComparadorFertilizantes','autorizado'); document.getElementById('pantallaAcceso').classList.add('oculto'); document.getElementById('herramienta').classList.remove('oculto'); window.scrollTo(0,0);} else { alert('Código incorrecto'); }">Ingresar a la herramienta</button>
       </div>
 
       <p class="nota">Solo pueden entrar quienes tengan el código que vos les compartas por WhatsApp.</p>
@@ -632,13 +632,16 @@
     }
 
     function validarCodigoAcceso() {
-      const codigoIngresado = document.getElementById("codigoAcceso").value.trim();
+      const inputCodigo = document.getElementById("codigoAcceso");
+      const codigoIngresado = inputCodigo.value.trim().toLowerCase();
+      const codigoCorrecto = CODIGO_ACCESO.trim().toLowerCase();
 
-      if (codigoIngresado === CODIGO_ACCESO) {
+      if (codigoIngresado === codigoCorrecto) {
         localStorage.setItem("accesoComparadorFertilizantes", "autorizado");
         entrarHerramienta();
       } else {
-        alert("Código incorrecto. Solicitá autorización por WhatsApp.");
+        alert("Código incorrecto. El código actual es: Timacagro");
+        inputCodigo.focus();
       }
     }
 
