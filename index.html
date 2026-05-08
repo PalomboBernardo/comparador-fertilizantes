@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Comparador de fertilizantes</title>
+  <style>
+    :root {
+      --azul: #24364f;
+      --azul2: #344e72;
+      --verde: #7fd34e;
+      --celeste: #cfe2f6;
+      --gris: #e7ebf1;
+      --fondo: #f5f7fa;
+      --texto: #162033;
+      --borde: #111827;
+      --rojo: #b23b3b;
+      --sombra: 0 12px 30px rgba(15, 23, 42, .12);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--fondo);
+      color: var(--texto);
+    }
+
+    header {
+      background: linear-gradient(135deg, var(--azul), var(--azul2));
+      color: white;
+      padding: 34px 16px;
+      text-align: center;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: clamp(30px, 5vw, 52px);
+      letter-spacing: -.5px;
+    }
+
+    main {
+      max-width: 1400px;
+      margin: auto;
+      padding: 18px 14px 48px;
+    }
+
+    .panel {
+      background: white;
+      border: 1px solid #d9dee8;
+      border-radius: 18px;
+      padding: 18px;
+      margin-bottom: 18px;
+      box-shadow: var(--sombra);
+    }
+
+    .panel-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: flex-start;
+      margin-bottom: 14px;
+    }
+
+    h2 {
+      margin: 0 0 5px;
+      color: var(--azul);
+      font-size: 22px;
+    }
+
+    p {
+      margin: 0;
+      color: #667085;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+
+    .acciones {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    button {
+      border: none;
+      border-radius: 11px;
+      background: var(--azul);
+      color: white;
+      font-weight: 800;
+      padding: 10px 13px;
+      cursor: pointer;
+    }
+
+    button:hover { filter: brightness(.96); transform: translateY(-1px); }
+    button.verde { background: #4f9d28; }
+    button.gris { background: #5f6f85; }
+    button.rojo { background: var(--rojo); }
+    button.claro { background: #edf2f7; color: var(--azul); }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 12px;
+      align-items: end;
+    }
+
+    .campo { grid-column: span 2; }
+    .campo.largo { grid-column: span 4; }
+    .campo label {
+      display: block;
+      font-size: 12px;
+      font-weight: 900;
+      margin-bottom: 5px;
+      text-transform: uppercase;
+      color: #344054;
+    }
+
+    input, select {
+      width: 100%;
+      border: 1px solid #c8ced8;
+      border-radius: 10px;
+      padding: 9px 10px;
+      font-size: 14px;
+      background: white;
+    }
+
+    .mezclas {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-top: 14px;
+    }
+
+    .mezcla-card {
+      background: #f8fafc;
+      border: 1px solid #d9dee8;
+      border-radius: 16px;
+      padding: 14px;
+    }
+
+    .mezcla-card h3 {
+      margin: 0 0 10px;
+      color: var(--azul);
+    }
+
+    .modo-mezcla {
+      display: grid;
+      grid-template-columns: 1fr 170px;
+      gap: 8px;
+      margin-bottom: 10px;
+      align-items: center;
+    }
+
+    .fila-componente {
+      display: grid;
+      grid-template-columns: 1fr 105px 42px;
+      gap: 8px;
+      margin-bottom: 8px;
+      align-items: center;
+    }
+
+    .total-mezcla {
+      margin-top: 8px;
+      font-weight: 900;
+      color: var(--azul);
+      font-size: 13px;
+    }
+
+    .tabla-wrap {
+      width: 100%;
+      overflow-x: auto;
+      border: 1px solid #d9dee8;
+      border-radius: 14px;
+      background: white;
+    }
+
+    table {
+      width: 100%;
+      min-width: 1180px;
+      border-collapse: collapse;
+      font-size: 13.5px;
+    }
+
+    th, td {
+      border: 1.8px solid var(--borde);
+      padding: 6px;
+      text-align: center;
+      vertical-align: middle;
+    }
+
+    th {
+      background: #d9dde4;
+      font-weight: 900;
+      font-style: italic;
+      white-space: nowrap;
+    }
+
+    td.nombre {
+      min-width: 250px;
+      text-align: left;
+      font-weight: 900;
+    }
+
+    td input {
+      border: 0;
+      border-radius: 0;
+      padding: 5px;
+      text-align: center;
+      background: transparent;
+      font-size: 13px;
+    }
+
+    .comparativo {
+      margin-top: 18px;
+      border: 2px solid var(--borde);
+      border-radius: 16px;
+      overflow: hidden;
+      background: white;
+    }
+
+    .titulo-comparativo {
+      background: var(--azul);
+      color: white;
+      padding: 12px 14px;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .titulo-comparativo h3 {
+      margin: 0;
+      font-size: 17px;
+    }
+
+    .fila-producto {
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
+    .fila-disponible td:first-child {
+      background: var(--azul2);
+      color: white;
+      font-weight: 800;
+      line-height: 1.25;
+      font-size: 12.5px;
+    }
+
+    .dosis-a {
+      background: var(--celeste);
+      font-size: 27px;
+      font-weight: 950;
+    }
+
+    .dosis-b {
+      background: var(--verde);
+      font-size: 27px;
+      font-weight: 950;
+    }
+
+    .resumen {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 12px;
+      padding: 14px;
+      background: #f8fafc;
+      border-top: 1px solid #d9dee8;
+    }
+
+    .card {
+      background: white;
+      border: 1px solid #d9dee8;
+      border-radius: 14px;
+      padding: 13px;
+    }
+
+    .card span {
+      display: block;
+      color: #667085;
+      font-size: 12px;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
+    .card strong {
+      display: block;
+      margin-top: 5px;
+      font-size: 22px;
+      color: var(--azul);
+    }
+
+    .nota {
+      margin-top: 10px;
+      font-size: 13px;
+      color: #667085;
+    }
+
+    .acceso {
+      min-height: calc(100vh - 124px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 22px 14px;
+    }
+
+    .acceso-card {
+      width: min(760px, 100%);
+      background: white;
+      border: 1px solid #d9dee8;
+      border-radius: 22px;
+      box-shadow: var(--sombra);
+      padding: 28px;
+      text-align: center;
+    }
+
+    .acceso-card h2 {
+      font-size: clamp(24px, 4vw, 36px);
+      margin-bottom: 10px;
+    }
+
+    .acceso-card p {
+      max-width: 620px;
+      margin: 0 auto 18px;
+      font-size: 15px;
+    }
+
+    .acceso-botones {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      margin-top: 16px;
+    }
+
+    .whatsapp {
+      display: inline-block;
+      border-radius: 11px;
+      padding: 11px 15px;
+      background: #25d366;
+      color: white;
+      text-decoration: none;
+      font-weight: 900;
+    }
+
+    .oculto { display: none !important; }
+
+    @media print {
+      header, .armador, .base-datos, .acciones { display: none !important; }
+      main { max-width: none; padding: 0; }
+      .panel, .comparativo { box-shadow: none; border-radius: 0; }
+    }
+
+    @media (max-width: 900px) {
+      .panel-head { flex-direction: column; }
+      .mezclas { grid-template-columns: 1fr; }
+      .campo, .campo.largo { grid-column: span 12; }
+    }
+
+    @media (max-width: 560px) {
+      main { padding: 10px; }
+      .modo-mezcla { grid-template-columns: 1fr; }
+      .fila-componente { grid-template-columns: 1fr 80px 38px; }
+      table { font-size: 12px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Comparador de fertilizantes</h1>
+  </header>
+
+  <section id="pantallaAcceso" class="acceso">
+    <div class="acceso-card">
+      <h2>Acceso privado</h2>
+      <p>Esta herramienta es de uso técnico para asesores. Para solicitar permiso o evacuar dudas, enviá un WhatsApp al responsable de la herramienta.</p>
+      <div class="acceso-botones">
+        <a class="whatsapp" id="btnWhatsapp" target="_blank" rel="noopener">Solicitar acceso por WhatsApp</a>
+        <button onclick="entrarHerramienta()">Ya tengo autorización</button>
+      </div>
+      <p class="nota">El mensaje se abre automáticamente armado en WhatsApp. Solo tenés que tocar enviar.</p>
+    </div>
+  </section>
+
+  <main id="herramienta" class="oculto">
+    <section class="panel armador">
+      <div class="panel-head">
+        <div>
+          <h2>Armador de mezclas</h2>
+          <p>Podés cargar cada mezcla por porcentaje o por kg. Si cargás kg, la página calcula automáticamente el porcentaje de cada componente.</p>
+        </div>
+        <div class="acciones">
+          <button onclick="agregarComponente('A')">+ Componente A</button>
+          <button onclick="agregarComponente('B')">+ Componente B</button>
+          <button class="verde" onclick="calcularComparativo(false)">Calcular</button>
+        </div>
+      </div>
+
+      <div class="grid">
+        <div class="campo largo">
+          <label>Nombre del comparativo</label>
+          <input id="nombreComparativo" value="50% MAP + 50% UREA vs 70% NDUO + 30% TOP PHOS 724" />
+        </div>
+        <div class="campo">
+          <label>Dosis A kg/ha</label>
+          <input id="dosisA" type="number" value="100" />
+        </div>
+        <div class="campo">
+          <label>Dosis B kg/ha</label>
+          <input id="dosisB" type="number" value="100" />
+        </div>
+      </div>
+
+      <div class="mezclas">
+        <div class="mezcla-card">
+          <div class="modo-mezcla">
+            <h3>Mezcla A</h3>
+            <select id="modoA" onchange="renderizarMezclas()">
+              <option value="porcentaje">Cargar por %</option>
+              <option value="kg">Cargar por kg</option>
+            </select>
+          </div>
+          <div id="componentesA"></div>
+          <div class="total-mezcla" id="totalA"></div>
+        </div>
+
+        <div class="mezcla-card">
+          <div class="modo-mezcla">
+            <h3>Mezcla B</h3>
+            <select id="modoB" onchange="renderizarMezclas()">
+              <option value="porcentaje">Cargar por %</option>
+              <option value="kg">Cargar por kg</option>
+            </select>
+          </div>
+          <div id="componentesB"></div>
+          <div class="total-mezcla" id="totalB"></div>
+        </div>
+      </div>
+
+      <p class="nota">Los resultados se muestran con un solo decimal y redondeados hacia arriba.</p>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <div>
+          <h2>Resultado</h2>
+          <p>Primera línea: composición completa de la mezcla. Segunda línea: aporte según dosis y eficiencia.</p>
+        </div>
+        <div class="acciones">
+          <button class="verde" onclick="calcularComparativo(false)">Calcular</button>
+          <button onclick="calcularComparativo(true)">+ Agregar bloque</button>
+          <button class="claro" onclick="window.print()">Imprimir / PDF</button>
+        </div>
+      </div>
+      <div id="resultado"></div>
+    </section>
+
+    <section class="panel base-datos">
+      <div class="panel-head">
+        <div>
+          <h2>Base de fertilizantes</h2>
+          <p>Modificá fórmulas, eficiencias y precios. Los cambios quedan guardados en este navegador.</p>
+        </div>
+        <div class="acciones">
+          <button onclick="agregarFertilizante()">+ Producto</button>
+          <button class="gris" onclick="guardarDatos(true)">Guardar</button>
+          <button class="rojo" onclick="reiniciarDatos()">Reiniciar</button>
+        </div>
+      </div>
+
+      <div class="tabla-wrap">
+        <table id="tablaFertilizantes">
+          <thead>
+            <tr>
+              <th>Fertilizante</th><th>N</th><th>P</th><th>S</th><th>Ca</th><th>B</th><th>Mn</th><th>Zn</th><th>Cu</th><th>Mg</th><th>Eficiencia</th><th>USD/tn</th><th></th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const nutrientes = ["N", "P", "S", "Ca", "B", "Mn", "Zn", "Cu", "Mg"];
+
+    const datosIniciales = [
+      { nombre: "MAP", N: 11, P: 52, S: 0, Ca: 0, B: 0, Mn: 0, Zn: 0, Cu: 0, Mg: 0, eficiencia: 0.35, precio: 0 },
+      { nombre: "FOSFATO MONOAMÓNICO", N: 11, P: 52, S: 0, Ca: 0, B: 0, Mn: 0, Zn: 0, Cu: 0, Mg: 0, eficiencia: 0.35, precio: 731.5 },
+      { nombre: "NITRODOBLE", N: 27, P: 0, S: 5, Ca: 0, B: 0, Mn: 0, Zn: 0, Cu: 0, Mg: 2.3, eficiencia: 0.75, precio: 0 },
+      { nombre: "SOLMIX 80/20", N: 28, P: 0, S: 5.2, Ca: 0, B: 0, Mn: 0, Zn: 0, Cu: 0, Mg: 0, eficiencia: 0.6, precio: 0 },
+      { nombre: "UREA", N: 46, P: 0, S: 0, Ca: 0, B: 0, Mn: 0, Zn: 0, Cu: 0, Mg: 0, eficiencia: 0.6, precio: 0 },
+      { nombre: "AZUFERTIL", N: 0, P: 0, S: 15, Ca: 22, B: 0, Mn: 0, Zn: 0, Cu: 0, Mg: 0, eficiencia: 0.5, precio: 0 },
+      { nombre: "TOP PHOS 724", N: 7, P: 24, S: 7, Ca: 10, B: 0.2, Mn: 0.5, Zn: 0.5, Cu: 0.2, Mg: 0, eficiencia: 0.98, precio: 1218 },
+      { nombre: "TOP PHOS 280", N: 1, P: 28, S: 5, Ca: 17, B: 0, Mn: 0, Zn: 0, Cu: 0, Mg: 0, eficiencia: 0.98, precio: 0 },
+      { nombre: "NDUO", N: 37.5, P: 0, S: 3.5, Ca: 2, B: 0, Mn: 0, Zn: 0, Cu: 0, Mg: 1, eficiencia: 0.79, precio: 0 },
+      { nombre: "SULFAMMO META 29", N: 29, P: 0, S: 7, Ca: 4, B: 0, Mn: 0, Zn: 0, Cu: 0, Mg: 2, eficiencia: 0.98, precio: 0 },
+      { nombre: "SULFAMMO META 22", N: 22, P: 0, S: 10, Ca: 5, B: 0, Mn: 0, Zn: 0, Cu: 0, Mg: 2, eficiencia: 0.98, precio: 0 },
+      { nombre: "NUTRIMAX 738", N: 7, P: 38, S: 5, Ca: 0, B: 0, Mn: 0, Zn: 0.8, Cu: 0, Mg: 0, eficiencia: 0.5, precio: 0 },
+      { nombre: "MICROESSENTIAL S9", N: 10, P: 46, S: 9, Ca: 0, B: 0, Mn: 0, Zn: 0, Cu: 0, Mg: 0, eficiencia: 0.5, precio: 845.8 },
+      { nombre: "MICROESSENTIAL SZ", N: 12, P: 40, S: 10, Ca: 0, B: 0, Mn: 0, Zn: 1, Cu: 0, Mg: 0, eficiencia: 0.5, precio: 845.8 },
+      { nombre: "BASIDUO KEXTRA", N: 7, P: 12, S: 11, Ca: 4.5, B: 0, Mn: 0, Zn: 0, Cu: 0, Mg: 1.5, eficiencia: 0.98, precio: 0 },
+      { nombre: "SPS", N: 0, P: 21, S: 12, Ca: 20, B: 0, Mn: 0, Zn: 0, Cu: 0, Mg: 0, eficiencia: 0.45, precio: 0 },
+      { nombre: "MAP AZUFRADO", N: 14, P: 34, S: 8, Ca: 0, B: 0, Mn: 0, Zn: 0, Cu: 0, Mg: 0, eficiencia: 0.35, precio: 0 },
+      { nombre: "DAP", N: 18, P: 46, S: 0, Ca: 0, B: 0, Mn: 0, Zn: 0, Cu: 0, Mg: 0, eficiencia: 0.35, precio: 0 }
+    ];
+
+    let fertilizantes = JSON.parse(localStorage.getItem("comparadorFertilizantesV3")) || datosIniciales;
+    let contadorComparativos = 0;
+
+    let mezclas = {
+      A: [{ producto: buscarIndice("MAP"), cantidad: 50 }, { producto: buscarIndice("UREA"), cantidad: 50 }],
+      B: [{ producto: buscarIndice("NDUO"), cantidad: 70 }, { producto: buscarIndice("TOP PHOS 724"), cantidad: 30 }]
+    };
+
+    function buscarIndice(nombre) {
+      const indice = datosIniciales.findIndex(item => item.nombre === nombre);
+      return indice >= 0 ? indice : 0;
+    }
+
+    function buscarIndiceActual(nombre) {
+      const indice = fertilizantes.findIndex(item => item.nombre === nombre);
+      return indice >= 0 ? indice : 0;
+    }
+
+    function numero(valor) {
+      const n = Number(valor);
+      return Number.isFinite(n) ? n : 0;
+    }
+
+    function redondearArriba1(valor) {
+      return Math.ceil(numero(valor) * 10) / 10;
+    }
+
+    function formato1(valor) {
+      return redondearArriba1(valor).toLocaleString("es-AR", {
+        minimumFractionDigits: 1,
+        maximumFractionDigits: 1
+      });
+    }
+
+    function formato2(valor) {
+      return numero(valor).toLocaleString("es-AR", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
+    }
+
+    function opcionesProductos(seleccionado) {
+      return fertilizantes.map((item, indice) => {
+        return `<option value="${indice}" ${indice === seleccionado ? "selected" : ""}>${item.nombre}</option>`;
+      }).join("");
+    }
+
+    function renderizarTabla() {
+      const cuerpo = document.querySelector("#tablaFertilizantes tbody");
+      cuerpo.innerHTML = "";
+
+      fertilizantes.forEach((item, indice) => {
+        const fila = document.createElement("tr");
+        fila.innerHTML = `
+          <td class="nombre"><input value="${item.nombre}" onchange="editarDato(${indice}, 'nombre', this.value)"></td>
+          ${nutrientes.map(n => `<td><input type="number" step="0.0001" value="${item[n] || 0}" onchange="editarDato(${indice}, '${n}', this.value)"></td>`).join("")}
+          <td><input type="number" step="0.001" value="${item.eficiencia || 0}" onchange="editarDato(${indice}, 'eficiencia', this.value)"></td>
+          <td><input type="number" step="0.01" value="${item.precio || 0}" onchange="editarDato(${indice}, 'precio', this.value)"></td>
+          <td><button class="rojo" onclick="borrarFertilizante(${indice})">X</button></td>
+        `;
+        cuerpo.appendChild(fila);
+      });
+
+      renderizarMezclas();
+    }
+
+    function renderizarMezclas() {
+      ["A", "B"].forEach(lado => {
+        const modo = document.getElementById(`modo${lado}`).value;
+        const contenedor = document.getElementById(`componentes${lado}`);
+        contenedor.innerHTML = mezclas[lado].map((fila, indice) => `
+          <div class="fila-componente">
+            <select onchange="actualizarComponente('${lado}', ${indice}, 'producto', this.value)">${opcionesProductos(fila.producto)}</select>
+            <input type="number" step="0.01" value="${fila.cantidad}" onchange="actualizarComponente('${lado}', ${indice}, 'cantidad', this.value)" placeholder="${modo === 'kg' ? 'kg' : '%'}" />
+            <button class="rojo" onclick="quitarComponente('${lado}', ${indice})">X</button>
+          </div>
+        `).join("");
+        actualizarTotal(lado);
+      });
+    }
+
+    function actualizarTotal(lado) {
+      const modo = document.getElementById(`modo${lado}`).value;
+      const total = mezclas[lado].reduce((suma, fila) => suma + numero(fila.cantidad), 0);
+      const texto = modo === "kg" ? `Total: ${formato1(total)} kg` : `Total: ${formato1(total)}%`;
+      const elemento = document.getElementById(`total${lado}`);
+      elemento.textContent = texto;
+      elemento.style.color = modo === "kg" || Math.abs(total - 100) < 0.01 ? "#24364f" : "#b23b3b";
+    }
+
+    function actualizarComponente(lado, indice, campo, valor) {
+      mezclas[lado][indice][campo] = campo === "producto" ? numero(valor) : numero(valor);
+      actualizarTotal(lado);
+    }
+
+    function agregarComponente(lado) {
+      mezclas[lado].push({ producto: 0, cantidad: 0 });
+      renderizarMezclas();
+    }
+
+    function quitarComponente(lado, indice) {
+      mezclas[lado].splice(indice, 1);
+      renderizarMezclas();
+    }
+
+    function editarDato(indice, campo, valor) {
+      fertilizantes[indice][campo] = campo === "nombre" ? valor : numero(valor);
+      guardarDatos(false);
+      renderizarMezclas();
+    }
+
+    function agregarFertilizante() {
+      fertilizantes.push({ nombre: "NUEVO FERTILIZANTE", N: 0, P: 0, S: 0, Ca: 0, B: 0, Mn: 0, Zn: 0, Cu: 0, Mg: 0, eficiencia: 1, precio: 0 });
+      function configurarAccesoWhatsapp() {
+      const telefono = "5493472580898";
+      const mensaje = "Hola Bernardo, solicito permiso para acceder al Comparador de fertilizantes. También quiero poder consultar dudas técnicas por este medio.";
+      document.getElementById("btnWhatsapp").href = `https://wa.me/${telefono}?text=${encodeURIComponent(mensaje)}`;
+    }
+
+    function entrarHerramienta() {
+      document.getElementById("pantallaAcceso").classList.add("oculto");
+      document.getElementById("herramienta").classList.remove("oculto");
+    }
+
+    configurarAccesoWhatsapp();
+    renderizarTabla();
+      guardarDatos(false);
+    }
+
+    function borrarFertilizante(indice) {
+      fertilizantes.splice(indice, 1);
+      mezclas.A.forEach(fila => fila.producto = Math.min(fila.producto, fertilizantes.length - 1));
+      mezclas.B.forEach(fila => fila.producto = Math.min(fila.producto, fertilizantes.length - 1));
+      renderizarTabla();
+      guardarDatos(false);
+    }
+
+    function guardarDatos(mostrarMensaje = true) {
+      localStorage.setItem("comparadorFertilizantesV3", JSON.stringify(fertilizantes));
+      if (mostrarMensaje) alert("Datos guardados correctamente.");
+    }
+
+    function reiniciarDatos() {
+      if (!confirm("¿Seguro que querés reiniciar la base original?")) return;
+      localStorage.removeItem("comparadorFertilizantesV3");
+      fertilizantes = JSON.parse(JSON.stringify(datosIniciales));
+      mezclas = {
+        A: [{ producto: buscarIndiceActual("MAP"), cantidad: 50 }, { producto: buscarIndiceActual("UREA"), cantidad: 50 }],
+        B: [{ producto: buscarIndiceActual("NDUO"), cantidad: 70 }, { producto: buscarIndiceActual("TOP PHOS 724"), cantidad: 30 }]
+      };
+      renderizarTabla();
+      document.getElementById("resultado").innerHTML = "";
+      contadorComparativos = 0;
+    }
+
+    function construirMezcla(lado) {
+      const modo = document.getElementById(`modo${lado}`).value;
+      const totalCantidad = mezclas[lado].reduce((suma, fila) => suma + numero(fila.cantidad), 0);
+      const mezcla = { nombre: "", eficiencia: 0, precio: 0, totalCantidad, modo };
+      nutrientes.forEach(n => mezcla[n] = 0);
+
+      const partesNombre = [];
+
+      mezclas[lado].forEach(fila => {
+        const producto = fertilizantes[fila.producto];
+        if (!producto) return;
+
+        const cantidad = numero(fila.cantidad);
+        const fraccion = modo === "kg"
+          ? (totalCantidad > 0 ? cantidad / totalCantidad : 0)
+          : cantidad / 100;
+        const porcentajeCalculado = fraccion * 100;
+
+        partesNombre.push(`${formato1(porcentajeCalculado)}% ${producto.nombre}`);
+
+        nutrientes.forEach(n => {
+          mezcla[n] += numero(producto[n]) * fraccion;
+        });
+
+        mezcla.eficiencia += numero(producto.eficiencia) * fraccion;
+        mezcla.precio += numero(producto.precio) * fraccion;
+      });
+
+      mezcla.nombre = partesNombre.join(" + ");
+      mezcla.totalPorcentaje = modo === "kg" ? 100 : totalCantidad;
+      return mezcla;
+    }
+
+    function calcularDisponible(mezcla, dosis) {
+      const disponible = {};
+      nutrientes.forEach(n => {
+        disponible[n] = numero(mezcla[n]) * numero(dosis) / 100 * numero(mezcla.eficiencia);
+      });
+      return disponible;
+    }
+
+    function costoPorHa(dosis, precioTonelada) {
+      return numero(dosis) * numero(precioTonelada) / 1000;
+    }
+
+    function costoPorTn(dosis, costoHa) {
+      return numero(dosis) > 0 ? numero(costoHa) * 1000 / numero(dosis) : 0;
+    }
+
+    function lecturaTecnica(disponibleB, disponibleA) {
+      const diferencias = nutrientes
+        .map(n => ({ nutriente: n, diferencia: disponibleB[n] - disponibleA[n] }))
+        .filter(item => Math.abs(item.diferencia) > 0.01)
+        .sort((a, b) => Math.abs(b.diferencia) - Math.abs(a.diferencia))
+        .slice(0, 3);
+
+      if (!diferencias.length) return "Aportes similares";
+      return diferencias.map(item => `${item.nutriente}: ${item.diferencia > 0 ? "+" : ""}${formato1(item.diferencia)} kg/ha`).join(" · ");
+    }
+
+    function generarDefensaTecnica(mezclaA, mezclaB) {
+      const textoMezcla = (mezclaA.nombre + " " + mezclaB.nombre).toUpperCase();
+      let defensas = [];
+
+      if (textoMezcla.includes("TOP PHOS")) {
+        defensas.push("Fósforo protegido de máxima disponibilidad");
+        defensas.push("Factor FT: ayuda a reducir bloqueos del fósforo con cationes del suelo");
+        defensas.push("Mayor desarrollo radicular e implantación");
+        defensas.push("Más fósforo disponible por kg aplicado");
+        defensas.push("Buen comportamiento en pH ácido, neutro y alcalino");
+        defensas.push("Aporte balanceado de Calcio, Azufre y micronutrientes");
+      }
+
+      if (textoMezcla.includes("724")) {
+        defensas.push("TOP PHOS 724 suma Boro, Zinc, Manganeso y Cobre para completar la nutrición de gramíneas");
+        defensas.push("El aporte de Zinc ayuda al desarrollo inicial y a la actividad enzimática");
+        defensas.push("El Boro acompaña procesos reproductivos, floración y cuajado");
+      }
+
+      if (textoMezcla.includes("280")) {
+        defensas.push("TOP PHOS 280 es fuerte para leguminosas por su aporte de Fósforo, Calcio y Azufre");
+        defensas.push("Favorece implantación, nodulación y desarrollo radicular");
+      }
+
+      if (textoMezcla.includes("NDUO")) {
+        defensas.push("NDUO combina liberación rápida y gradual de nitrógeno");
+        defensas.push("Tecnología de doble membrana para mejorar la eficiencia del nitrógeno");
+        defensas.push("Menores pérdidas por volatilización, lavado o condiciones climáticas");
+        defensas.push("Aporta Azufre, Calcio y Magnesio para una nutrición más balanceada");
+        defensas.push("Puede mejorar la eficiencia logística al requerir menor dosis para igual aporte disponible");
+      }
+
+      if (textoMezcla.includes("SULFAMMO")) {
+        defensas.push("SULFAMMO aporta nitrógeno con liberación más progresiva");
+        defensas.push("Su doble membrana ayuda a sincronizar disponibilidad de nutrientes con demanda del cultivo");
+        defensas.push("Aporta Azufre, Calcio y Magnesio según formulación");
+        defensas.push("Mejora estabilidad nutricional y reduce pérdidas frente a fuentes convencionales");
+      }
+
+      if (mezclaB.eficiencia > mezclaA.eficiencia) {
+        defensas.push("La alternativa Timac muestra mayor eficiencia agronómica calculada en la comparación");
+      }
+
+      defensas = [...new Set(defensas)];
+      return defensas.length ? defensas.join(" • ") : "Sin defensa técnica específica para los productos seleccionados";
+    }
+
+    function calcularComparativo(agregar = false) {
+      const mezclaA = construirMezcla("A");
+      const mezclaB = construirMezcla("B");
+      const dosisA = numero(document.getElementById("dosisA").value);
+      const dosisB = numero(document.getElementById("dosisB").value);
+      const nombre = document.getElementById("nombreComparativo").value;
+
+      const disponibleA = calcularDisponible(mezclaA, dosisA);
+      const disponibleB = calcularDisponible(mezclaB, dosisB);
+      const costoA = costoPorHa(dosisA, mezclaA.precio);
+      const costoB = costoPorHa(dosisB, mezclaB.precio);
+      const diferenciaCosto = costoB - costoA;
+      const diferenciaPorcentaje = costoA > 0 ? diferenciaCosto / costoA * 100 : 0;
+
+      const html = `
+        <div class="comparativo">
+          <div class="titulo-comparativo">
+            <h3>${nombre}</h3>
+            <small>${new Date().toLocaleDateString("es-AR")}</small>
+          </div>
+          <div class="tabla-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Fertilizante / mezcla</th>${nutrientes.map(n => `<th>${n}</th>`).join("")}<th>Eficiencia</th><th>Dosis kg/ha</th><th>Costo/ha</th><th>Costo/tn</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="fila-producto">
+                  <td>${mezclaA.nombre}</td>${nutrientes.map(n => `<td>${formato1(mezclaA[n])}</td>`).join("")}<td>${formato1(mezclaA.eficiencia * 100)}%</td><td class="dosis-a">${formato1(dosisA)}</td><td>${formato2(costoA)}</td><td>${formato2(costoPorTn(dosisA, costoA))}</td>
+                </tr>
+                <tr class="fila-disponible">
+                  <td>Cantidad aportada según dosis<br>* eficiencia ${formato1(mezclaA.eficiencia * 100)}%</td>${nutrientes.map(n => `<td>${formato1(disponibleA[n])}</td>`).join("")}<td></td><td></td><td></td><td></td>
+                </tr>
+                <tr class="fila-producto">
+                  <td>${mezclaB.nombre}</td>${nutrientes.map(n => `<td>${formato1(mezclaB[n])}</td>`).join("")}<td>${formato1(mezclaB.eficiencia * 100)}%</td><td class="dosis-b">${formato1(dosisB)}</td><td>${formato2(costoB)}</td><td>${formato2(costoPorTn(dosisB, costoB))}</td>
+                </tr>
+                <tr class="fila-disponible">
+                  <td>Cantidad aportada según dosis<br>* eficiencia ${formato1(mezclaB.eficiencia * 100)}%</td>${nutrientes.map(n => `<td>${formato1(disponibleB[n])}</td>`).join("")}<td></td><td></td><td></td><td></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div style="padding:22px 24px;border-top:1px solid #d9dee8;background:linear-gradient(135deg,#f8fafc,#eef4fb);line-height:1.8;font-size:15px;color:#24364f;">
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+                <div style="width:14px;height:14px;border-radius:50%;background:#6fbf3f;box-shadow:0 0 0 6px rgba(111,191,63,.18);"></div>
+                <strong style="font-size:20px;color:#1f2e43;letter-spacing:-0.3px;">Defensa técnica de la alternativa Timac</strong>
+              </div>
+
+              <div style="background:white;border:1px solid #d9dee8;border-left:6px solid #6fbf3f;border-radius:14px;padding:18px 20px;box-shadow:0 6px 18px rgba(15,23,42,.06);">
+              <strong style="display:block;margin-bottom:8px;font-size:15px;color:#1f2e43;">Defensa técnica</strong>
+              ${generarDefensaTecnica(mezclaA, mezclaB)}
+            </div>
+          </div>
+      `;
+
+      const contenedor = document.getElementById("resultado");
+      contenedor.innerHTML = agregar ? contenedor.innerHTML + html : html;
+      contadorComparativos = agregar ? contadorComparativos + 1 : 1;
+    }
+
+    renderizarTabla();
+    mezclas.A = [{ producto: buscarIndiceActual("MAP"), cantidad: 50 }, { producto: buscarIndiceActual("UREA"), cantidad: 50 }];
+    mezclas.B = [{ producto: buscarIndiceActual("NDUO"), cantidad: 70 }, { producto: buscarIndiceActual("TOP PHOS 724"), cantidad: 30 }];
+    renderizarMezclas();
+    calcularComparativo(false);
+  </script>
+</body>
+</html>
