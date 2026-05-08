@@ -375,10 +375,15 @@
       <h2>Acceso privado</h2>
       <p>Esta herramienta es de uso técnico para asesores. Para solicitar permiso o evacuar dudas, enviá un WhatsApp al responsable de la herramienta.</p>
       <div class="acceso-botones">
-        <a class="whatsapp" id="btnWhatsapp" target="_blank" rel="noopener">Solicitar acceso por WhatsApp</a>
-        <button onclick="entrarHerramienta()">Ya tengo autorización</button>
+        <a class="whatsapp" href="https://wa.me/5493472580898?text=Hola%20Bernardo%2C%20solicito%20permiso%20para%20acceder%20al%20Comparador%20de%20fertilizantes.%20Tambi%C3%A9n%20quiero%20poder%20consultar%20dudas%20t%C3%A9cnicas%20por%20este%20medio." target="_blank" rel="noopener">Solicitar código por WhatsApp</a>
       </div>
-      <p class="nota">El mensaje se abre automáticamente armado en WhatsApp. Solo tenés que tocar enviar.</p>
+
+      <div style="max-width:360px;margin:18px auto 0;display:grid;gap:8px;">
+        <input id="codigoAcceso" type="password" placeholder="Ingresar código de acceso" autocomplete="off" />
+        <button type="button" onclick="validarCodigoAcceso()">Ingresar a la herramienta</button>
+      </div>
+
+      <p class="nota">Solo pueden entrar quienes tengan el código que vos les compartas por WhatsApp.</p>
     </div>
   </section>
 
@@ -618,18 +623,28 @@
 
     function agregarFertilizante() {
       fertilizantes.push({ nombre: "NUEVO FERTILIZANTE", N: 0, P: 0, S: 0, Ca: 0, B: 0, Mn: 0, Zn: 0, Cu: 0, Mg: 0, eficiencia: 1, precio: 0 });
-      function configurarAccesoWhatsapp() {
-      const telefono = "5493472580898";
-      const mensaje = "Hola Bernardo, solicito permiso para acceder al Comparador de fertilizantes. También quiero poder consultar dudas técnicas por este medio.";
-      document.getElementById("btnWhatsapp").href = `https://wa.me/${telefono}?text=${encodeURIComponent(mensaje)}`;
-    }
+      const CODIGO_ACCESO = "Timacagro";
 
     function entrarHerramienta() {
       document.getElementById("pantallaAcceso").classList.add("oculto");
       document.getElementById("herramienta").classList.remove("oculto");
+      window.scrollTo(0, 0);
     }
 
-    configurarAccesoWhatsapp();
+    function validarCodigoAcceso() {
+      const codigoIngresado = document.getElementById("codigoAcceso").value.trim();
+
+      if (codigoIngresado === CODIGO_ACCESO) {
+        localStorage.setItem("accesoComparadorFertilizantes", "autorizado");
+        entrarHerramienta();
+      } else {
+        alert("Código incorrecto. Solicitá autorización por WhatsApp.");
+      }
+    }
+
+    if (localStorage.getItem("accesoComparadorFertilizantes") === "autorizado") {
+      entrarHerramienta();
+    }
     renderizarTabla();
       guardarDatos(false);
     }
